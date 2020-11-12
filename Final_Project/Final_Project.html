@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css"
+ integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<title>3D Graphic Final Project</title>
+<h2>3D Graphic Final Project<br>Name ID: Weicai Zhao 201441193</h2>
+</head>
+<script id="vertex-shader" type="x-shader/x-vertex">
+
+// assume both position and normal are in homogeneous form
+
+attribute vec4 vPosition;
+attribute  vec2 vTexCoord;
+attribute  vec3 vNormal;
+
+uniform mat4 modelViewMatrix;
+uniform mat4 projectionMatrix;//projectionMatrix
+uniform mat4 u_world;//parallel light
+uniform mat4 modelView;//
+uniform vec3 u_lightWorldPosition;//point light position
+
+varying vec2 fTexCoord;
+varying vec3 fNormal;
+varying float s, t;
+varying vec3 v_surfaceToLight;
+
+void
+main()
+{
+
+    fTexCoord = vTexCoord;
+
+    //vector the the shader
+    fNormal=mat3(u_world) *vNormal;
+
+    gl_Position = projectionMatrix * modelViewMatrix * modelView * vPosition;
+
+    // calculate the word or
+    vec3 surfaceWorldPosition = (u_world * vPosition ).xyz;
+    v_surfaceToLight = u_lightWorldPosition - surfaceWorldPosition;
+}
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+
+precision mediump float;
+
+
+uniform sampler2D texture1;
+uniform sampler2D texture2;
+uniform sampler2D texture3;
+uniform sampler2D texture4;
+uniform sampler2D texture5;
+uniform int bTexCoord;
+uniform vec3 u_reverseLightDirection;
+uniform int sunControl;
+uniform int dotControl;
+uniform int limitControl;
+
+varying  vec2 fTexCoord;
+varying  vec3 fNormal;
+varying vec3 v_surfaceToLight;
+
+void
+main()
+{
+	vec3 normal=normalize(fNormal);
+    vec3 surfaceToLightDirection = normalize(v_surfaceToLight);
+    float light2 = dot(normal, surfaceToLightDirection);
+    float light1 = dot(normal,u_reverseLightDirection);
+
+    if(bTexCoord==1)
+        gl_FragColor = texture2D( texture1, fTexCoord );
+
+    if(bTexCoord==2)
+       gl_FragColor = texture2D( texture2, fTexCoord); 
+
+    if(bTexCoord==4)
+       gl_FragColor = texture2D( texture2, fTexCoord)*texture2D( texture4, fTexCoord);    
+
+    if(bTexCoord==3)
+       gl_FragColor = texture2D( texture3, fTexCoord);  
+
+    if(bTexCoord==5)
+       gl_FragColor = texture2D( texture5, fTexCoord);    
+
+    if(limitControl==-1)
+    {
+    	if(light2<0.9)
+    	   light2=0.0;
+    }
+
+    if(sunControl==1&&dotControl!=1)
+    {
+    	gl_FragColor.rgb *= (light1);
+    }
+    if(sunControl!=1&&dotControl!=1)
+    {
+    	gl_FragColor.rgb *= 0.0;
+    }
+    if(sunControl!=1&&dotControl==1)
+    {
+    	gl_FragColor.rgb *= (light2);
+    }
+    if(sunControl==1&&dotControl==1)
+    {
+    	gl_FragColor.rgb *= (light1*0.45+light2*.75+0.2);
+    } 
+}
+</script>
+<!--	float light = dot(normal,u_reverseLightDirection);-->
+<script type="text/javascript" src="../Common/webgl-utils.js"></script>
+<script type="text/javascript" src="../Common/initShaders.js"></script>
+<script type="text/javascript" src="../Common/m4.js"></script>
+<script type="text/javascript" src="../Common/MV.js"></script>
+<script type="text/javascript" src="../Common/webgl-lessons-ui.js"></script>
+<script type="text/javascript" src="Final_Project.js"></script>
+
+<body  style="text-align:center;">
+<canvas id="gl-canvas" width="1024" height="1024">
+</canvas>
+<br>
+<button id= "Object1Forward" class="btn btn-warning">CY FORWARD</button>
+<button id= "Object1Backward" class="btn btn-warning">CY BACKWORD</button>
+<button id= "Object1R1" class="btn btn-warning">CY RIGHT</button>
+<button id= "Object1R2" class="btn btn-warning">CY LEFT</button>
+<button id= "Object1ZoomIn" class="btn btn-warning">CY BIGGER</button>
+<button id= "Object1ZoomOut" class="btn btn-warning">CY SMALLER</button>
+</br>
+
+<br>
+<button id= "Object2Forward" class="btn btn-warning"> PIG FORWARD</button>
+<button id= "Object2Backward" class="btn btn-warning">PIG BACKWARD</button>
+<button id= "Object2R1" class="btn btn-warning">PIG RIGHT</button>
+<button id= "Object2R2" class="btn btn-warning">PIG LEFT</button>
+<button id= "Object2ZoomIn" class="btn btn-warning">PIG BIGGER</button>
+<button id= "Object2ZoomOut" class="btn btn-warning">PIG SMALLER</button>
+</br>
+
+<br>
+<button id= "camera1" type="button" class="btn btn-success" color="red">CAMERA FORWARD</button>
+<button id= "camera2" type="button" class="btn btn-success">CAMERA BACKWARD</button>
+<button id= "camera3" type="button" class="btn btn-success">RIGHT</button>
+<button id= "camera4" type="button" class="btn btn-success">LEFT</button>
+<button id= "camera5" type="button" class="btn btn-success">DOWN</button>
+<button id= "camera6" type="button" class="btn btn-success">UP</button>
+</br>
+
+<br>
+<button id= "light1" type="button" class="btn btn-success" color="red">Light FORWARD</button>
+<button id= "light2" type="button" class="btn btn-success">Light BACKWARD</button>
+<button id= "light3" type="button" class="btn btn-success">Light RIGHT</button>
+<button id= "light4" type="button" class="btn btn-success">Light LEFT</button>
+<button id= "light5" type="button" class="btn btn-success">Light UP</button>
+<button id= "light6" type="button" class="btn btn-success">Light DOWN</button>
+</br>
+
+<br>
+<button id= "face" type="button" class="btn btn-success" color="red">FACE_CY</button>
+<button id= "face2" type="button" class="btn btn-success" color="red">FACE_PIG</button>
+<button id= "sun1" type="button" class="btn btn-success" color="red">SUN ARISE</button>
+<button id= "sun2" type="button" class="btn btn-success" color="red">SUN MIDDLE</button>
+</br>
+
+<br>
+<button id= "sunlight" type="button" class="btn btn-success" color="red">SUN LIGHT</button>
+<button id= "dotlight" type="button" class="btn btn-success" color="red">DOT LIGHT</button>
+<button id= "dot" type="button" class="btn btn-success" color="red">DOT LIMIT</button>
+<button id= "view" type="button" class="btn btn-success" color="red">VIEW</button>
+</br>
+
+<img id = "pig" src = "pig.jpg" hidden></img>
+<img id = "cy" src = "cy.jpg" hidden></img>
+<img id = "cy3" src = "cy3.jpg" hidden></img>
+<img id = "pig4" src = "pig4.jpg" hidden></img>
+<img id = "ground" src = "ground.jpg" hidden></img>
+</body>
+</html>
