@@ -5,4 +5,6 @@
 4. run: http-server(for mac os)
    run: npx http-server(for windows)
 5. input: 127.0.0.1:8080 in browser
+6. Double click the Final_Project.html to enter the web game
+7. Click any button below to control the girl, the pig, the sunshine and the lights
 
